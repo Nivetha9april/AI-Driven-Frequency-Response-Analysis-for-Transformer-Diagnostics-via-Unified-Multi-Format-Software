@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Transformer Digital Twin</title>
+  <style> body { margin: 0; } canvas { display: block; } </style>
+</head>
+<body>
+<script type="module">
+  import * as THREE from "https://unpkg.com/three@0.152.0/build/three.module.js";
+  import { OrbitControls } from "https://unpkg.com/three@0.152.0/examples/jsm/controls/OrbitControls.js";
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+
+  // Transformer Core (Gray Box)
+  const coreGeo = new THREE.BoxGeometry(2, 4, 2);
+  const coreMat = new THREE.MeshStandardMaterial({ color: 0x555555 });
+  const core = new THREE.Mesh(coreGeo, coreMat);
+  scene.add(core);
+
+  // Winding (Cylinder, Green)
+  const windingGeo = new THREE.CylinderGeometry(1.5, 1.5, 3.5, 32);
+  const windingMat = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+  const winding = new THREE.Mesh(windingGeo, windingMat);
+  scene.add(winding);
+
+  // Bushings (Blue small cylinders)
+  const bushingGeo = new THREE.CylinderGeometry(0.3, 0.3, 1, 16);
+  const bushingMat = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+  const bushing1 = new THREE.Mesh(bushingGeo, bushingMat);
+  bushing1.position.set(1.5, 2.5, 0);
+  const bushing2 = new THREE.Mesh(bushingGeo, bushingMat);
+  bushing2.position.set(-1.5, 2.5, 0);
+  scene.add(bushing1);
+  scene.add(bushing2);
+
+  // Example: Simulate FRA anomaly → highlight winding red
+  // Later, you’ll pass info from AI model
+  winding.material.color.set(0xff0000);
+
+  // Lights
+  const light = new THREE.DirectionalLight(0xffffff,1);
+  light.position.set(5,5,5).normalize();
+  scene.add(light);
+  scene.add(new THREE.AmbientLight(0x404040));
+
+  camera.position.z = 8;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    core.rotation.y += 0.005;
+    winding.rotation.y += 0.005;
+    bushing1.rotation.y += 0.005;
+    bushing2.rotation.y += 0.005;
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
+</body>
+</html>
